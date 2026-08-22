@@ -32,10 +32,12 @@ UI):
 | `memoryThreshold`| 95     | RAM warning %                    |
 | `swapThreshold` | 85      | swap warning %                   |
 | `diskThreshold` | 90      | disk warning %                   |
-| `showSwap`      | true    | show the swap meter              |
-| `alwaysShowCpu` | true    | keep the CPU meter visible       |
-| `showGpu`       | Auto    | GPU meter: `Auto` / `Show` / `Hide` |
-| `showNpu`       | Auto    | NPU meter: `Auto` / `Show` / `Hide` |
+| `showCpu`       | Auto    | CPU meter: `Auto` / `Show` / `Hide`   |
+| `showGpu`       | Auto    | GPU meter: `Auto` / `Show` / `Hide`   |
+| `showNpu`       | Auto    | NPU meter: `Auto` / `Show` / `Hide`   |
+| `showRam`       | Auto    | RAM meter: `Auto` / `Show` / `Hide`   |
+| `showSwap`      | Auto    | Swap meter: `Auto` / `Show` / `Hide`  |
+| `showDisk`      | Auto    | Disk meter: `Auto` / `Show` / `Hide`  |
 
 ## Data sources
 
@@ -64,11 +66,14 @@ to an `NA` sentinel; a missing device just means `gpuAvailable`/`npuAvailable`
 are false and those meters hide. CPU, RAM, swap, and disk are universal.
 
 - GPU load is read from the Intel tile0/gt0 `gtidle` residency counter — on AMD
-  or NVIDIA machines it auto-hides. There's no vendor-agnostic load source.
+  or NVIDIA machines this auto-hides. There's no vendor-agnostic load source.
 - NPU is read from the Intel `accel0` driver (`npu_busy_time_us`) — on machines
   without an NPU it auto-hides.
-- If a device is present but its detection is wrong (or you want the meter on
-  any hardware), set `showGpu`/`showNpu` to `Show`; to force it off, `Hide`.
+- Swap auto-hides on systems with no swap device.
+- Every meter has a `show<X>` setting (`Auto`/`Show`/`Hide`): `Auto` follows
+  detection, `Show` forces the meter on any hardware, `Hide` removes it (bar
+  and hover card). The config UI or `omarchy bar set trevor.system-monitor
+  showGpu Show` set them.
 
 ## Notes
 

@@ -22,10 +22,12 @@
       "memoryThreshold": 95,
       "swapThreshold": 85,
       "diskThreshold": 90,
-      "showSwap": true,
-      "alwaysShowCpu": true,
+      "showCpu": "Auto",
       "showGpu": "Auto",
-      "showNpu": "Auto"
+      "showNpu": "Auto",
+      "showRam": "Auto",
+      "showSwap": "Auto",
+      "showDisk": "Auto"
     },
     "schema": [
       { "key": "updateInterval", "type": "number", "label": "Update interval (ms)" },
@@ -35,10 +37,12 @@
       { "key": "memoryThreshold", "type": "number", "label": "RAM warning threshold (%)" },
       { "key": "swapThreshold", "type": "number", "label": "Swap warning threshold (%)" },
       { "key": "diskThreshold", "type": "number", "label": "Disk warning threshold (%)" },
-      { "key": "showSwap", "type": "bool", "label": "Show swap meter" },
-      { "key": "alwaysShowCpu", "type": "bool", "label": "Always show CPU meter" },
-      { "key": "showGpu", "type": "enum", "label": "GPU meter", "options": ["Auto", "Show", "Hide"], "defaultValue": "Auto", "description": "Auto shows the meter only when a compatible Intel GPU is detected; Show/Hide override on any hardware." },
-      { "key": "showNpu", "type": "enum", "label": "NPU meter", "options": ["Auto", "Show", "Hide"], "defaultValue": "Auto", "description": "Auto shows the meter only when an NPU is detected; Show/Hide override on any hardware." }
+      { "key": "showCpu", "type": "enum", "label": "CPU meter", "options": ["Auto", "Show", "Hide"], "defaultValue": "Auto", "description": "Auto/Show always show on any hardware; Hide removes the meter." },
+      { "key": "showGpu", "type": "enum", "label": "GPU meter", "options": ["Auto", "Show", "Hide"], "defaultValue": "Auto", "description": "Auto shows only when a compatible Intel GPU is detected; Show/Hide override on any hardware." },
+      { "key": "showNpu", "type": "enum", "label": "NPU meter", "options": ["Auto", "Show", "Hide"], "defaultValue": "Auto", "description": "Auto shows only when an NPU is detected; Show/Hide override on any hardware." },
+      { "key": "showRam", "type": "enum", "label": "RAM meter", "options": ["Auto", "Show", "Hide"], "defaultValue": "Auto", "description": "Auto/Show always show on any hardware; Hide removes the meter." },
+      { "key": "showSwap", "type": "enum", "label": "Swap meter", "options": ["Auto", "Show", "Hide"], "defaultValue": "Auto", "description": "Auto shows only when a swap device exists; Show/Hide override." },
+      { "key": "showDisk", "type": "enum", "label": "Disk meter", "options": ["Auto", "Show", "Hide"], "defaultValue": "Auto", "description": "Auto/Show always show on any hardware; Hide removes the meter." }
     ]
   }
 }

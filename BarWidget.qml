@@ -18,10 +18,6 @@ BarWidget {
   readonly property int memoryThreshold: root.setting("memoryThreshold", 95)
   readonly property int swapThreshold: root.setting("swapThreshold", 85)
   readonly property int diskThreshold: root.setting("diskThreshold", 90)
-  // omarchy bar set writes booleans as JSON strings ("true"/"false"), so
-  // coerce explicitly — a truthy string would otherwise leave "false" on.
-  readonly property bool showSwap: String(root.setting("showSwap", true)).toLowerCase() === "true"
-  readonly property bool alwaysShowCpu: String(root.setting("alwaysShowCpu", true)).toLowerCase() === "true"
 
   // ---- Nerd Font glyphs ----
   readonly property string cpuGlyph: ""   // fa-microchip
@@ -40,12 +36,14 @@ BarWidget {
     return Math.round(p * 100) >= threshold
   }
 
-  // GPU/NPU visibility: "Show"/"Hide" override detection, "Auto" (default)
-  // shows only when the device was detected on this hardware.
+  // Per-meter visibility for every show<X> setting: "Show"/"Hide" override
+  // detection, "Auto" (default) shows only when the resource is available on
+  // this hardware. Legacy "true"/"false" strings (from the older bool
+  // settings) are mapped onto Show/Hide so old configs keep working.
   function meterVisible(available, key) {
     var v = String(root.setting(key, "Auto")).toLowerCase()
-    if (v === "show") return true
-    if (v === "hide") return false
+    if (v === "show" || v === "true" || v === "1") return true
+    if (v === "hide" || v === "false" || v === "0") return false
     return available
   }
 
@@ -113,7 +111,7 @@ BarWidget {
       MeterText {
         text: "cpu: " + Fmt.pct01(stats.cpuUsage)
         warn: root.warn(stats.cpuUsage, root.cpuThreshold)
-        visible: root.alwaysShowCpu || stats.cpuUsage > 0.01
+        visible: root.meterVisible(true, "showCpu")
       }
       MeterText {
         text: "gpu: " + Fmt.pct01(stats.gpuUsage)
@@ -128,15 +126,17 @@ BarWidget {
       MeterText {
         text: "ram: " + Fmt.pct01(root.memRatio)
         warn: root.warn(root.memRatio, root.memoryThreshold)
+        visible: root.meterVisible(true, "showRam")
       }
       MeterText {
         text: "swap: " + Fmt.pct01(root.swapRatio)
         warn: root.warn(root.swapRatio, root.swapThreshold)
-        visible: root.showSwap && stats.swapTotalKb > 0
+        visible: root.meterVisible(stats.swapTotalKb > 0, "showSwap")
       }
       MeterText {
         text: "disk: " + stats.diskPct + "%"
         warn: root.warn(stats.diskPct / 100, root.diskThreshold)
+        visible: root.meterVisible(true, "showDisk")
       }
     }
 
@@ -183,7 +183,7 @@ BarWidget {
         freq: stats.cpuFreqMhz > 0 ? Fmt.mhz(stats.cpuFreqMhz) : "Idle"
       }
       DetailRow {
-        visible: stats.gpuAvailable
+        visible: root.meterVisible(stats.gpuAvailable, "showGpu")
         label: root.gpuGlyph + " GPU"
         color: root.gpuColor
         fontFamily: root.fam
@@ -192,7 +192,7 @@ BarWidget {
         freq: stats.gpuFreqMhz > 0 ? Fmt.mhz(stats.gpuFreqMhz) : "Idle"
       }
       DetailRow {
-        visible: stats.npuAvailable
+        visible: root.meterVisible(stats.npuAvailable, "showNpu")
         label: root.npuGlyph + " NPU"
         color: root.npuColor
         fontFamily: root.fam
@@ -212,7 +212,7 @@ BarWidget {
         total: Fmt.gb(stats.memTotalKb)
       }
       DetailRow {
-        visible: root.showSwap && stats.swapTotalKb > 0
+        visible: root.meterVisible(stats.swapTotalKb > 0, "showSwap")
         label: root.swapGlyph + " Swap"
         color: root.swapColor
         fontFamily: root.fam
