@@ -51,8 +51,9 @@ QtObject {
     if (!pollProc.running) pollProc.running = true
   }
 
-  Timer {
-    id: pollTimer
+  // QtObject has no default property in this Qt, so the Timer and Process are
+  // declared as properties instead of children.
+  property Timer pollTimer: Timer {
     interval: root.interval
     running: root.enabled
     repeat: true
@@ -61,28 +62,32 @@ QtObject {
   }
 
   // Intel Lunar Lake sysfs layout (Arc iGPU tile0/gt0 + accel0 NPU).
-  readonly property string SCRIPT: """
-LANG=C
-{
-  echo "cpu=$(head -1 /proc/stat)"
-  echo "cur=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2>/dev/null || echo NA)"
-  echo "cmax=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 2>/dev/null || echo NA)"
-  echo "mem=$(grep -E '^(MemTotal|MemAvailable|SwapTotal|SwapFree):' /proc/meminfo | xargs)"
-  echo "gact=$(cat /sys/class/drm/card0/device/tile0/gt0/freq0/act_freq 2>/dev/null || echo NA)"
-  echo "gmax=$(cat /sys/class/drm/card0/device/tile0/gt0/freq0/max_freq 2>/dev/null || echo NA)"
-  echo "gidle=$(cat /sys/class/drm/card0/device/tile0/gt0/gtidle/idle_residency_ms 2>/dev/null || echo NA)"
-  echo "nbusy=$(cat /sys/class/accel/accel0/device/npu_busy_time_us 2>/dev/null || echo NA)"
-  echo "nstat=$(cat /sys/class/accel/accel0/device/power/runtime_status 2>/dev/null || echo NA)"
-  echo "ncur=$(cat /sys/class/accel/accel0/device/npu_current_frequency_mhz 2>/dev/null || echo NA)"
-  echo "nmax=$(cat /sys/class/accel/accel0/device/npu_max_frequency_mhz 2>/dev/null || echo NA)"
-  echo "nmem=$(cat /sys/class/accel/accel0/device/npu_memory_utilization 2>/dev/null || echo NA)"
-  echo "disk=$(df -P / | awk 'NR==2 {print $2, $3, $4, $5}')"
-}
-"""
+  // QML has no triple-quoted strings, so the script is a list of lines joined
+  // with \n. The inner double quotes are omitted — every value is a space-
+  // separated run of tokens (no glob chars, no embedded spaces), so unquoted
+  // `echo $(...)` is word-splitting-safe and prints single-spaced. The single
+  // quotes inside the awk/grep programs are literal inside these QML strings.
+  readonly property string snapshotScript: [
+    "LANG=C",
+    "{",
+    "  echo cpu=$(head -1 /proc/stat)",
+    "  echo cur=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2>/dev/null || echo NA)",
+    "  echo cmax=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 2>/dev/null || echo NA)",
+    "  echo mem=$(grep -E '^(MemTotal|MemAvailable|SwapTotal|SwapFree):' /proc/meminfo | xargs)",
+    "  echo gact=$(cat /sys/class/drm/card0/device/tile0/gt0/freq0/act_freq 2>/dev/null || echo NA)",
+    "  echo gmax=$(cat /sys/class/drm/card0/device/tile0/gt0/freq0/max_freq 2>/dev/null || echo NA)",
+    "  echo gidle=$(cat /sys/class/drm/card0/device/tile0/gt0/gtidle/idle_residency_ms 2>/dev/null || echo NA)",
+    "  echo nbusy=$(cat /sys/class/accel/accel0/device/npu_busy_time_us 2>/dev/null || echo NA)",
+    "  echo nstat=$(cat /sys/class/accel/accel0/device/power/runtime_status 2>/dev/null || echo NA)",
+    "  echo ncur=$(cat /sys/class/accel/accel0/device/npu_current_frequency_mhz 2>/dev/null || echo NA)",
+    "  echo nmax=$(cat /sys/class/accel/accel0/device/npu_max_frequency_mhz 2>/dev/null || echo NA)",
+    "  echo nmem=$(cat /sys/class/accel/accel0/device/npu_memory_utilization 2>/dev/null || echo NA)",
+    "  echo disk=$(df -P / | awk 'NR==2 {print $2, $3, $4, $5}')",
+    "}"
+  ].join("\n")
 
-  Process {
-    id: pollProc
-    command: ["sh", "-c", root.SCRIPT]
+  property Process pollProc: Process {
+    command: ["sh", "-c", root.snapshotScript]
     stdout: StdioCollector {
       id: pollOutput
       waitForEnd: true
