@@ -23,7 +23,9 @@
       "swapThreshold": 85,
       "diskThreshold": 90,
       "showSwap": true,
-      "alwaysShowCpu": true
+      "alwaysShowCpu": true,
+      "showGpu": "Auto",
+      "showNpu": "Auto"
     },
     "schema": [
       { "key": "updateInterval", "type": "number", "label": "Update interval (ms)" },
@@ -34,7 +36,9 @@
       { "key": "swapThreshold", "type": "number", "label": "Swap warning threshold (%)" },
       { "key": "diskThreshold", "type": "number", "label": "Disk warning threshold (%)" },
       { "key": "showSwap", "type": "bool", "label": "Show swap meter" },
-      { "key": "alwaysShowCpu", "type": "bool", "label": "Always show CPU meter" }
+      { "key": "alwaysShowCpu", "type": "bool", "label": "Always show CPU meter" },
+      { "key": "showGpu", "type": "enum", "label": "GPU meter", "options": ["Auto", "Show", "Hide"], "defaultValue": "Auto", "description": "Auto shows the meter only when a compatible Intel GPU is detected; Show/Hide override on any hardware." },
+      { "key": "showNpu", "type": "enum", "label": "NPU meter", "options": ["Auto", "Show", "Hide"], "defaultValue": "Auto", "description": "Auto shows the meter only when an NPU is detected; Show/Hide override on any hardware." }
     ]
   }
 }

@@ -40,6 +40,15 @@ BarWidget {
     return Math.round(p * 100) >= threshold
   }
 
+  // GPU/NPU visibility: "Show"/"Hide" override detection, "Auto" (default)
+  // shows only when the device was detected on this hardware.
+  function meterVisible(available, key) {
+    var v = String(root.setting(key, "Auto")).toLowerCase()
+    if (v === "show") return true
+    if (v === "hide") return false
+    return available
+  }
+
   readonly property real memRatio: stats.memTotalKb > 0 ? stats.memUsedKb / stats.memTotalKb : 0
   readonly property real swapRatio: stats.swapTotalKb > 0 ? stats.swapUsedKb / stats.swapTotalKb : 0
 
@@ -109,12 +118,12 @@ BarWidget {
       MeterText {
         text: "gpu: " + Fmt.pct01(stats.gpuUsage)
         warn: root.warn(stats.gpuUsage, root.gpuThreshold)
-        visible: stats.gpuAvailable
+        visible: root.meterVisible(stats.gpuAvailable, "showGpu")
       }
       MeterText {
         text: "npu: " + Fmt.pct01(stats.npuUsage)
         warn: root.warn(stats.npuUsage, root.npuThreshold)
-        visible: stats.npuAvailable
+        visible: root.meterVisible(stats.npuAvailable, "showNpu")
       }
       MeterText {
         text: "ram: " + Fmt.pct01(root.memRatio)

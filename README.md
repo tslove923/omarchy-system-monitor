@@ -34,6 +34,8 @@ UI):
 | `diskThreshold` | 90      | disk warning %                   |
 | `showSwap`      | true    | show the swap meter              |
 | `alwaysShowCpu` | true    | keep the CPU meter visible       |
+| `showGpu`       | Auto    | GPU meter: `Auto` / `Show` / `Hide` |
+| `showNpu`       | Auto    | NPU meter: `Auto` / `Show` / `Hide` |
 
 ## Data sources
 
@@ -54,6 +56,19 @@ One `sh -c` snapshot per poll, all read-only:
 
 Paths are the Intel Lunar Lake layout (Arc iGPU tile0/gt0, accel0 NPU). If a
 sysfs path is missing the corresponding meter hides rather than erroring.
+
+## Hardware portability
+
+The plugin never crashes on other hardware. Every GPU/NPU sysfs read falls back
+to an `NA` sentinel; a missing device just means `gpuAvailable`/`npuAvailable`
+are false and those meters hide. CPU, RAM, swap, and disk are universal.
+
+- GPU load is read from the Intel tile0/gt0 `gtidle` residency counter — on AMD
+  or NVIDIA machines it auto-hides. There's no vendor-agnostic load source.
+- NPU is read from the Intel `accel0` driver (`npu_busy_time_us`) — on machines
+  without an NPU it auto-hides.
+- If a device is present but its detection is wrong (or you want the meter on
+  any hardware), set `showGpu`/`showNpu` to `Show`; to force it off, `Hide`.
 
 ## Notes
 
