@@ -55,6 +55,8 @@ One `sh -c` snapshot per poll, all read-only:
 | NPU mem     | `/sys/class/accel/accel0/device/npu_memory_utilization` (bytes)  |
 | NPU status  | `/sys/class/accel/accel0/device/power/runtime_status`         |
 | disk        | `df -P /`                                                     |
+| RAM clock   | `sudo -n dmidecode -t memory` (Configured Memory Speed)        |
+| SSD clock   | `/sys/class/nvme/nvme*/device/current_link_speed` (first NVMe) |
 
 Paths are the Intel Lunar Lake layout (Arc iGPU tile0/gt0, accel0 NPU). If a
 sysfs path is missing the corresponding meter hides rather than erroring.
@@ -83,8 +85,12 @@ are false and those meters hide. CPU, RAM, swap, and disk are universal.
 - **NPU suspend.** When the NPU is `suspended` the busy counter is frozen, so
   usage is forced to 0 and the card shows `Suspended`.
 - **Safety.** The plugin spawns one `sh -c` per poll with a fixed, literal
-  script (no user input, no QML interpolation). All sources are world-readable
+  script (no user input, no shell interpolation). All sources are world-readable
   `/proc` and `/sys` files plus `df`. No network, no persistent state.
+  A separate one-shot `sh -c` at startup reads the RAM clock via
+  `sudo -n dmidecode -t memory` — it never prompts, and without dmidecode or
+  passwordless sudo the RAM clock simply shows `—` (the SSD clock needs no
+  privileges).
 
 ## License
 

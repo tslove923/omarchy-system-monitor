@@ -207,6 +207,7 @@ BarWidget {
         fontFamily: root.fam
         normalColor: root.normalColor
         load: Fmt.pct01(root.memRatio)
+        freq: stats.memSpeed || "—"
         used: Fmt.gb(stats.memUsedKb)
         free: Fmt.gb(stats.memTotalKb - stats.memUsedKb)
         total: Fmt.gb(stats.memTotalKb)
@@ -228,6 +229,7 @@ BarWidget {
         fontFamily: root.fam
         normalColor: root.normalColor
         load: stats.diskPct + "%"
+        freq: stats.diskSpeed || "—"
         used: Fmt.gb(stats.diskUsedKb)
         free: Fmt.gb(stats.diskAvailKb)
         total: Fmt.gb(stats.diskTotalKb)

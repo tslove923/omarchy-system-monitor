@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "trevor.system-monitor",
   "name": "System Monitor",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "tlove923",
   "license": "MIT",
   "description": "CPU / GPU / NPU / RAM / swap / disk text meters with a hover details card.",

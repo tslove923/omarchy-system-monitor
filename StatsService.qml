@@ -36,6 +36,8 @@ QtObject {
   property real diskAvailKb: 0
   property real diskTotalKb: 0
   property int diskPct: 0
+  property string memSpeed: ""        // DRAM configured speed ("8533 MT/s"); via dmidecode, "" if unavailable
+  property string diskSpeed: ""       // first NVMe link speed ("8.0 GT/s"); "" on non-NVMe
 
   property int interval: 3000
   property bool enabled: true
@@ -94,6 +96,41 @@ QtObject {
       onStreamFinished: root.parse(pollOutput.text)
     }
   }
+
+  // Static clock reads (DRAM speed, NVMe link speed) — one-shot at startup,
+  // not per poll. RAM speed needs dmidecode + passwordless sudo (`sudo -n`
+  // never prompts); both fall back to "" so the freq column shows "—".
+  readonly property string clockScript: [
+    "LANG=C",
+    "{",
+    "  echo memspeed=$(sudo -n dmidecode -t memory 2>/dev/null | awk -F: '/Configured Memory Speed/ {print $2; exit}')",
+    "  echo ssd=$(cat /sys/class/nvme/nvme*/device/current_link_speed 2>/dev/null | head -1)",
+    "}"
+  ].join("\n")
+
+  property Process clockProc: Process {
+    command: ["sh", "-c", root.clockScript]
+    stdout: StdioCollector {
+      id: clockOutput
+      waitForEnd: true
+      onStreamFinished: root.parseClocks(clockOutput.text)
+    }
+  }
+
+  function parseClocks(text) {
+    const raw = {}
+    const lines = (text || "").split("\n")
+    for (const line of lines) {
+      const i = line.indexOf("=")
+      if (i < 0) continue
+      raw[line.slice(0, i)] = line.slice(i + 1)
+    }
+    root.memSpeed = String(raw.memspeed || "").trim()
+    // Trim the trailing " PCIe" so "8.0 GT/s PCIe" fits the freq column.
+    root.diskSpeed = String(raw.ssd || "").replace(/\s*PCIe$/, "").trim()
+  }
+
+  Component.onCompleted: clockProc.running = true
 
   function parse(text) {
     const raw = {}
