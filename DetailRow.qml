@@ -9,6 +9,8 @@ Row {
 
   required property string label
   required property color color
+  property string labelGlyph: ""          // optional leading icon
+  property string labelGlyphFont: ""      // icon font ("" -> fontFamily); FA7 for fa-brain/fa-memory
   property string load: "—"
   property string freq: "—"
   property string used: "—"
@@ -27,14 +29,25 @@ Row {
   width: parent ? parent.width : (colLabel + colLoad + colFreq + colUsed + colFree + colTotal)
   spacing: 0
 
-  Text {
+  Row {
     width: row.colLabel
-    text: row.label
-    font.family: row.fontFamily
-    font.pixelSize: Style.font.bodySmall
-    color: row.normalColor
-    horizontalAlignment: Text.AlignLeft
-    renderType: Text.NativeRendering
+    spacing: Style.space(4)
+    Text {
+      visible: row.labelGlyph !== ""
+      text: row.labelGlyph
+      font.family: row.labelGlyphFont !== "" ? row.labelGlyphFont : row.fontFamily
+      font.pixelSize: Style.font.bodySmall
+      color: row.normalColor
+      renderType: Text.NativeRendering
+    }
+    Text {
+      text: row.label
+      font.family: row.fontFamily
+      font.pixelSize: Style.font.bodySmall
+      color: row.normalColor
+      horizontalAlignment: Text.AlignLeft
+      renderType: Text.NativeRendering
+    }
   }
   Text {
     width: row.colLoad

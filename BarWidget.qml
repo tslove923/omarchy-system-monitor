@@ -28,6 +28,9 @@ BarWidget {
   readonly property string memGlyph: ""    // fa-memory
   readonly property string swapGlyph: ""  // fa-exchange
   readonly property string diskGlyph: ""  // fa-hdd-o
+  // fa-brain and fa-memory are not in the bar's Nerd font; they render via this
+  // explicitly-set family (Font Awesome 7 Free Solid, otf-font-awesome).
+  readonly property string faGlyphFont: "Font Awesome 7 Free Solid"
 
   // ---- theme ----
   readonly property color normalColor: root.bar ? root.bar.barForeground : Color.foreground
@@ -131,39 +134,77 @@ BarWidget {
       Item { width: Style.spaceReal(8); height: 1 }
 
       MeterText {
-        text: root.mode === "icons" ? root.cpuGlyph + " " + Fmt.pct01(stats.cpuUsage) : "cpu: " + Fmt.pct01(stats.cpuUsage)
+        label: "cpu: " + Fmt.pct01(stats.cpuUsage)
+        glyph: root.mode === "icons" ? root.cpuGlyph : ""
+        pct: root.mode === "icons" ? Fmt.pct01(stats.cpuUsage) : ""
         warn: root.warn(stats.cpuUsage, root.cpuThreshold)
         meterFontSize: root.meterFontSize
+        fontFamily: root.fam
+        normalColor: root.normalColor
+        warnColor: root.warnColor
+        barSize: root.barSize
         visible: root.meterVisible(true, "showCpu")
       }
       MeterText {
-        text: root.mode === "icons" ? root.gpuGlyph + " " + Fmt.pct01(stats.gpuUsage) : "gpu: " + Fmt.pct01(stats.gpuUsage)
+        label: "gpu: " + Fmt.pct01(stats.gpuUsage)
+        glyph: root.mode === "icons" ? root.gpuGlyph : ""
+        pct: root.mode === "icons" ? Fmt.pct01(stats.gpuUsage) : ""
         warn: root.warn(stats.gpuUsage, root.gpuThreshold)
         meterFontSize: root.meterFontSize
+        fontFamily: root.fam
+        normalColor: root.normalColor
+        warnColor: root.warnColor
+        barSize: root.barSize
         visible: root.meterVisible(stats.gpuAvailable, "showGpu")
       }
       MeterText {
-        text: root.mode === "icons" ? root.npuGlyph + " " + Fmt.pct01(stats.npuUsage) : "npu: " + Fmt.pct01(stats.npuUsage)
+        label: "npu: " + Fmt.pct01(stats.npuUsage)
+        glyph: root.mode === "icons" ? root.npuGlyph : ""
+        pct: root.mode === "icons" ? Fmt.pct01(stats.npuUsage) : ""
+        glyphFont: root.faGlyphFont
         warn: root.warn(stats.npuUsage, root.npuThreshold)
         meterFontSize: root.meterFontSize
+        fontFamily: root.fam
+        normalColor: root.normalColor
+        warnColor: root.warnColor
+        barSize: root.barSize
         visible: root.meterVisible(stats.npuAvailable, "showNpu")
       }
       MeterText {
-        text: root.mode === "icons" ? root.memGlyph + " " + Fmt.pct01(root.memRatio) : "ram: " + Fmt.pct01(root.memRatio)
+        label: "ram: " + Fmt.pct01(root.memRatio)
+        glyph: root.mode === "icons" ? root.memGlyph : ""
+        pct: root.mode === "icons" ? Fmt.pct01(root.memRatio) : ""
+        glyphFont: root.faGlyphFont
         warn: root.warn(root.memRatio, root.memoryThreshold)
         meterFontSize: root.meterFontSize
+        fontFamily: root.fam
+        normalColor: root.normalColor
+        warnColor: root.warnColor
+        barSize: root.barSize
         visible: root.meterVisible(true, "showRam")
       }
       MeterText {
-        text: root.mode === "icons" ? root.swapGlyph + " " + Fmt.pct01(root.swapRatio) : "swap: " + Fmt.pct01(root.swapRatio)
+        label: "swap: " + Fmt.pct01(root.swapRatio)
+        glyph: root.mode === "icons" ? root.swapGlyph : ""
+        pct: root.mode === "icons" ? Fmt.pct01(root.swapRatio) : ""
         warn: root.warn(root.swapRatio, root.swapThreshold)
         meterFontSize: root.meterFontSize
+        fontFamily: root.fam
+        normalColor: root.normalColor
+        warnColor: root.warnColor
+        barSize: root.barSize
         visible: root.meterVisible(stats.swapTotalKb > 0, "showSwap")
       }
       MeterText {
-        text: root.mode === "icons" ? root.diskGlyph + " " + stats.diskPct + "%" : "disk: " + stats.diskPct + "%"
+        label: "disk: " + stats.diskPct + "%"
+        glyph: root.mode === "icons" ? root.diskGlyph : ""
+        pct: root.mode === "icons" ? stats.diskPct + "%" : ""
         warn: root.warn(stats.diskPct / 100, root.diskThreshold)
         meterFontSize: root.meterFontSize
+        fontFamily: root.fam
+        normalColor: root.normalColor
+        warnColor: root.warnColor
+        barSize: root.barSize
         visible: root.meterVisible(true, "showDisk")
       }
     }
@@ -211,7 +252,8 @@ BarWidget {
       PanelSeparator { foreground: root.normalColor }
 
       DetailRow {
-        label: root.cpuGlyph + " CPU"
+        label: "CPU"
+        labelGlyph: root.cpuGlyph
         color: root.cpuColor
         fontFamily: root.fam
         normalColor: root.normalColor
@@ -220,7 +262,8 @@ BarWidget {
       }
       DetailRow {
         visible: root.meterVisible(stats.gpuAvailable, "showGpu")
-        label: root.gpuGlyph + " GPU"
+        label: "GPU"
+        labelGlyph: root.gpuGlyph
         color: root.gpuColor
         fontFamily: root.fam
         normalColor: root.normalColor
@@ -229,7 +272,9 @@ BarWidget {
       }
       DetailRow {
         visible: root.meterVisible(stats.npuAvailable, "showNpu")
-        label: root.npuGlyph + " NPU"
+        label: "NPU"
+        labelGlyph: root.npuGlyph
+        labelGlyphFont: root.faGlyphFont
         color: root.npuColor
         fontFamily: root.fam
         normalColor: root.normalColor
@@ -238,7 +283,9 @@ BarWidget {
         used: stats.npuMemBytes > 0 ? (stats.npuMemBytes / 1048576).toFixed(0) + " MB" : "—"
       }
       DetailRow {
-        label: root.memGlyph + " RAM"
+        label: "RAM"
+        labelGlyph: root.memGlyph
+        labelGlyphFont: root.faGlyphFont
         color: root.memColor
         fontFamily: root.fam
         normalColor: root.normalColor
@@ -250,7 +297,8 @@ BarWidget {
       }
       DetailRow {
         visible: root.meterVisible(stats.swapTotalKb > 0, "showSwap")
-        label: root.swapGlyph + " Swap"
+        label: "Swap"
+        labelGlyph: root.swapGlyph
         color: root.swapColor
         fontFamily: root.fam
         normalColor: root.normalColor
@@ -260,7 +308,8 @@ BarWidget {
         total: Fmt.gb(stats.swapTotalKb)
       }
       DetailRow {
-        label: root.diskGlyph + " Disk"
+        label: "Disk"
+        labelGlyph: root.diskGlyph
         color: root.diskColor
         fontFamily: root.fam
         normalColor: root.normalColor
