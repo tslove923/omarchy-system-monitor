@@ -86,6 +86,9 @@ are false and those meters hide. CPU, RAM, swap, and disk are universal.
   blocks). The disk meter is still useful for runaway usage.
 - **NPU suspend.** When the NPU is `suspended` the busy counter is frozen, so
   usage is forced to 0 and the card shows `Suspended`.
+- **Icons.** The bar glyphs live in the bar's Nerd Font, except NPU (fa-brain)
+  and RAM (fa-memory), which come from Font Awesome 7 Free — install
+  `otf-font-awesome` if those two render as blank; fontconfig falls back to it.
 - **Safety.** The plugin spawns one `sh -c` per poll with a fixed, literal
   script (no user input, no shell interpolation). All sources are world-readable
   `/proc` and `/sys` files plus `df`. No network, no persistent state.

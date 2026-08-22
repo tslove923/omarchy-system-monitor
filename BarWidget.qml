@@ -19,13 +19,13 @@ BarWidget {
   readonly property int swapThreshold: root.setting("swapThreshold", 85)
   readonly property int diskThreshold: root.setting("diskThreshold", 90)
 
-  // ---- Nerd Font glyphs (verified present in the bar font JetBrainsMono NF).
-  // fa-brain (U+F5DC) and fa-memory (U+F538) are NOT in it, so NPU and RAM use
-  // the mdi equivalents (chip / memory) which are covered.
+  // ---- Nerd Font glyphs. fa-brain (U+F5DC) and fa-memory (U+F538) are not in
+  // the bar font (JetBrainsMono NF), but Font Awesome 7 Free is installed
+  // (otf-font-awesome) and fontconfig falls back to it for those glyphs.
   readonly property string cpuGlyph: ""   // fa-microchip
   readonly property string gpuGlyph: ""   // fa-bolt
-  readonly property string npuGlyph: ""    // mdi-chip
-  readonly property string memGlyph: ""    // mdi-memory
+  readonly property string npuGlyph: ""    // fa-brain
+  readonly property string memGlyph: ""    // fa-memory
   readonly property string swapGlyph: ""  // fa-exchange
   readonly property string diskGlyph: ""  // fa-hdd-o
 
