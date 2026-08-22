@@ -3,15 +3,16 @@
 CPU / GPU / NPU / RAM / swap / disk monitoring for the Omarchy shell bar,
 ported from the illogical-impulse QuickShell config.
 
-Six compact ring meters in the bar (GPU and NPU only appear when the device is
-present). Hovering the meters opens a details card with load, frequency, NPU
-memory + status, and used / free / total for RAM, swap, and disk. Meters flip
-to the warning color (`bar.urgent`) above their configured threshold.
+Compact text meters in the bar — `cpu: 25% gpu: 12% ram: 41%` etc. (GPU and NPU
+only appear when the device is present). Hovering the row opens a details card
+with load, frequency, NPU memory + status, and used / free / total for RAM,
+swap, and disk. A meter flips to the warning color (`bar.urgent`) above its
+configured threshold.
 
 ## Install
 
 ```sh
-omarchy plugin add https://github.com/tslove923/omarchy-system-monitor --enable
+omarchy plugin add https://github.com/tlove923/omarchy-system-monitor --enable
 omarchy-shell shell rescanPlugins
 omarchy bar move trevor.system-monitor --section left
 ```

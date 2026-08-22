@@ -3,9 +3,9 @@ import qs.Ui
 import qs.Commons
 import "Format.js" as Fmt
 
-// System Monitor — CPU / GPU / NPU / RAM / swap / disk ring meters with a
+// System Monitor — CPU / GPU / NPU / RAM / swap / disk text meters with a
 // hover details card. Ported from the illogical-impulse QuickShell config,
-// rebuilt on the Omarchy widget kit (BarWidget + PopupCard).
+// rebuilt on the Omarchy widget kit (BarWidget + WidgetButton + PopupCard).
 BarWidget {
   id: root
   moduleName: "trevor.system-monitor"
@@ -18,8 +18,10 @@ BarWidget {
   readonly property int memoryThreshold: root.setting("memoryThreshold", 95)
   readonly property int swapThreshold: root.setting("swapThreshold", 85)
   readonly property int diskThreshold: root.setting("diskThreshold", 90)
-  readonly property bool showSwap: root.setting("showSwap", true)
-  readonly property bool alwaysShowCpu: root.setting("alwaysShowCpu", true)
+  // omarchy bar set writes booleans as JSON strings ("true"/"false"), so
+  // coerce explicitly — a truthy string would otherwise leave "false" on.
+  readonly property bool showSwap: String(root.setting("showSwap", true)).toLowerCase() === "true"
+  readonly property bool alwaysShowCpu: String(root.setting("alwaysShowCpu", true)).toLowerCase() === "true"
 
   // ---- Nerd Font glyphs ----
   readonly property string cpuGlyph: ""   // fa-microchip
@@ -84,7 +86,7 @@ BarWidget {
   implicitWidth: metersRow.implicitWidth
   implicitHeight: root.barSize
 
-  // ---- meters row ----
+  // ---- text meters row (Omarchy WidgetButton style) ----
   Item {
     id: metersRow
     anchors.fill: parent
@@ -94,59 +96,38 @@ BarWidget {
     Row {
       id: metersLayout
       anchors.centerIn: parent
-      spacing: Style.space(3)
+      spacing: 0
 
-      MeterCell {
-        color: root.cpuColor
-        glyph: root.cpuGlyph
-        ratio: stats.cpuUsage
-        text: Fmt.pct01(stats.cpuUsage)
-        fontFamily: root.fam
-        barSize: root.barSize
+      // A little breathing room from the widget to the left (workspace numbers).
+      Item { width: Style.spaceReal(8); height: 1 }
+
+      MeterText {
+        text: "cpu: " + Fmt.pct01(stats.cpuUsage)
+        warn: root.warn(stats.cpuUsage, root.cpuThreshold)
         visible: root.alwaysShowCpu || stats.cpuUsage > 0.01
       }
-      MeterCell {
-        color: root.gpuColor
-        glyph: root.gpuGlyph
-        ratio: stats.gpuUsage
-        text: Fmt.pct01(stats.gpuUsage)
-        fontFamily: root.fam
-        barSize: root.barSize
+      MeterText {
+        text: "gpu: " + Fmt.pct01(stats.gpuUsage)
+        warn: root.warn(stats.gpuUsage, root.gpuThreshold)
         visible: stats.gpuAvailable
       }
-      MeterCell {
-        color: root.npuColor
-        glyph: root.npuGlyph
-        ratio: stats.npuUsage
-        text: Fmt.pct01(stats.npuUsage)
-        fontFamily: root.fam
-        barSize: root.barSize
+      MeterText {
+        text: "npu: " + Fmt.pct01(stats.npuUsage)
+        warn: root.warn(stats.npuUsage, root.npuThreshold)
         visible: stats.npuAvailable
       }
-      MeterCell {
-        color: root.memColor
-        glyph: root.memGlyph
-        ratio: root.memRatio
-        text: Fmt.pct01(root.memRatio)
-        fontFamily: root.fam
-        barSize: root.barSize
+      MeterText {
+        text: "ram: " + Fmt.pct01(root.memRatio)
+        warn: root.warn(root.memRatio, root.memoryThreshold)
       }
-      MeterCell {
-        color: root.swapColor
-        glyph: root.swapGlyph
-        ratio: root.swapRatio
-        text: Fmt.pct01(root.swapRatio)
-        fontFamily: root.fam
-        barSize: root.barSize
+      MeterText {
+        text: "swap: " + Fmt.pct01(root.swapRatio)
+        warn: root.warn(root.swapRatio, root.swapThreshold)
         visible: root.showSwap && stats.swapTotalKb > 0
       }
-      MeterCell {
-        color: root.diskColor
-        glyph: root.diskGlyph
-        ratio: stats.diskPct / 100
-        text: stats.diskPct + "%"
-        fontFamily: root.fam
-        barSize: root.barSize
+      MeterText {
+        text: "disk: " + stats.diskPct + "%"
+        warn: root.warn(stats.diskPct / 100, root.diskThreshold)
       }
     }
 
