@@ -47,6 +47,26 @@ BarWidget {
     return available
   }
 
+  // ---- display mode: "text" (cpu: 25%) or "icons" (Nerd glyphs), toggled by
+  // clicking the widget and persisted to shell.json via the shell host. Read as
+  // a live binding (like the clock's format) so it follows config changes and
+  // re-evaluates when persistSettings replaces the settings object.
+  readonly property string mode: root.setting("displayMode", "Text").toLowerCase() === "icons" ? "icons" : "text"
+  readonly property real meterFontSize: root.mode === "icons" ? Style.font.icon : Style.font.caption
+
+  function persistSettings(values) {
+    var entry = { id: root.moduleName }
+    for (var existing in root.settings) if (existing !== "id") entry[existing] = root.settings[existing]
+    for (var key in values) entry[key] = values[key]
+    root.settings = entry
+    if (root.bar && root.bar.shell && typeof root.bar.shell.updateEntryInline === "function")
+      root.bar.shell.updateEntryInline(root.moduleName, entry)
+  }
+
+  function toggleMode() {
+    root.persistSettings({ displayMode: root.mode === "icons" ? "Text" : "Icons" })
+  }
+
   readonly property real memRatio: stats.memTotalKb > 0 ? stats.memUsedKb / stats.memTotalKb : 0
   readonly property real swapRatio: stats.swapTotalKb > 0 ? stats.swapUsedKb / stats.swapTotalKb : 0
 
@@ -109,35 +129,49 @@ BarWidget {
       Item { width: Style.spaceReal(8); height: 1 }
 
       MeterText {
-        text: "cpu: " + Fmt.pct01(stats.cpuUsage)
+        text: root.mode === "icons" ? root.cpuGlyph : "cpu: " + Fmt.pct01(stats.cpuUsage)
         warn: root.warn(stats.cpuUsage, root.cpuThreshold)
+        meterFontSize: root.meterFontSize
         visible: root.meterVisible(true, "showCpu")
       }
       MeterText {
-        text: "gpu: " + Fmt.pct01(stats.gpuUsage)
+        text: root.mode === "icons" ? root.gpuGlyph : "gpu: " + Fmt.pct01(stats.gpuUsage)
         warn: root.warn(stats.gpuUsage, root.gpuThreshold)
+        meterFontSize: root.meterFontSize
         visible: root.meterVisible(stats.gpuAvailable, "showGpu")
       }
       MeterText {
-        text: "npu: " + Fmt.pct01(stats.npuUsage)
+        text: root.mode === "icons" ? root.npuGlyph : "npu: " + Fmt.pct01(stats.npuUsage)
         warn: root.warn(stats.npuUsage, root.npuThreshold)
+        meterFontSize: root.meterFontSize
         visible: root.meterVisible(stats.npuAvailable, "showNpu")
       }
       MeterText {
-        text: "ram: " + Fmt.pct01(root.memRatio)
+        text: root.mode === "icons" ? root.memGlyph : "ram: " + Fmt.pct01(root.memRatio)
         warn: root.warn(root.memRatio, root.memoryThreshold)
+        meterFontSize: root.meterFontSize
         visible: root.meterVisible(true, "showRam")
       }
       MeterText {
-        text: "swap: " + Fmt.pct01(root.swapRatio)
+        text: root.mode === "icons" ? root.swapGlyph : "swap: " + Fmt.pct01(root.swapRatio)
         warn: root.warn(root.swapRatio, root.swapThreshold)
+        meterFontSize: root.meterFontSize
         visible: root.meterVisible(stats.swapTotalKb > 0, "showSwap")
       }
       MeterText {
-        text: "disk: " + stats.diskPct + "%"
+        text: root.mode === "icons" ? root.diskGlyph : "disk: " + stats.diskPct + "%"
         warn: root.warn(stats.diskPct / 100, root.diskThreshold)
+        meterFontSize: root.meterFontSize
         visible: root.meterVisible(true, "showDisk")
       }
+    }
+
+    // Click anywhere on the meters to switch text <-> icons (persisted).
+    MouseArea {
+      id: clickArea
+      anchors.fill: parent
+      acceptedButtons: Qt.LeftButton | Qt.RightButton
+      onClicked: root.toggleMode()
     }
 
     HoverHandler { id: rowHover }

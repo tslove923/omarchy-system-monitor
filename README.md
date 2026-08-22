@@ -3,11 +3,12 @@
 CPU / GPU / NPU / RAM / swap / disk monitoring for the Omarchy shell bar,
 ported from the illogical-impulse QuickShell config.
 
-Compact text meters in the bar — `cpu: 25% gpu: 12% ram: 41%` etc. (GPU and NPU
-only appear when the device is present). Hovering the row opens a details card
-with load, frequency, NPU memory + status, and used / free / total for RAM,
-swap, and disk. A meter flips to the warning color (`bar.urgent`) above its
-configured threshold.
+Compact meters in the bar — `cpu: 25% gpu: 12% ram: 41%` etc. in text mode, or
+Nerd glyphs in icon mode. **Click the widget to toggle text <-> icons** (the
+choice is persisted to shell.json). GPU and NPU only appear when the device is
+present. Hovering the row opens a details card with load, frequency, NPU memory
++ status, and used / free / total for RAM, swap, and disk. A meter flips to a
+warning color (`bar.urgent`) above its configured threshold.
 
 ## Install
 
@@ -38,6 +39,7 @@ UI):
 | `showRam`       | Auto    | RAM meter: `Auto` / `Show` / `Hide`   |
 | `showSwap`      | Auto    | Swap meter: `Auto` / `Show` / `Hide`  |
 | `showDisk`      | Auto    | Disk meter: `Auto` / `Show` / `Hide`  |
+| `displayMode`   | Text    | `Text` / `Icons` (click the widget to toggle) |
 
 ## Data sources
 

@@ -12,8 +12,9 @@ WidgetButton {
   id: root
 
   property bool warn: false
+  property real meterFontSize: Style.font.caption
 
-  fontSize: Style.font.caption
+  fontSize: root.meterFontSize
   horizontalMargin: 3
   interactive: false
   pressable: false

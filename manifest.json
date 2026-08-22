@@ -5,12 +5,12 @@
   "version": "0.2.0",
   "author": "tlove923",
   "license": "MIT",
-  "description": "CPU / GPU / NPU / RAM / swap / disk text meters with a hover details card.",
+  "description": "CPU / GPU / NPU / RAM / swap / disk meters (text or icons) with a hover details card.",
   "kinds": ["bar-widget"],
   "entryPoints": { "barWidget": "BarWidget.qml" },
   "barWidget": {
     "displayName": "System Monitor",
-    "description": "CPU/GPU/NPU/RAM/swap/disk text meters",
+    "description": "CPU/GPU/NPU/RAM/swap/disk meters (text or icons)",
     "category": "System",
     "allowMultiple": false,
     "defaultSection": "left",
@@ -27,7 +27,8 @@
       "showNpu": "Auto",
       "showRam": "Auto",
       "showSwap": "Auto",
-      "showDisk": "Auto"
+      "showDisk": "Auto",
+      "displayMode": "Text"
     },
     "schema": [
       { "key": "updateInterval", "type": "number", "label": "Update interval (ms)" },
@@ -42,7 +43,8 @@
       { "key": "showNpu", "type": "enum", "label": "NPU meter", "options": ["Auto", "Show", "Hide"], "defaultValue": "Auto", "description": "Auto shows only when an NPU is detected; Show/Hide override on any hardware." },
       { "key": "showRam", "type": "enum", "label": "RAM meter", "options": ["Auto", "Show", "Hide"], "defaultValue": "Auto", "description": "Auto/Show always show on any hardware; Hide removes the meter." },
       { "key": "showSwap", "type": "enum", "label": "Swap meter", "options": ["Auto", "Show", "Hide"], "defaultValue": "Auto", "description": "Auto shows only when a swap device exists; Show/Hide override." },
-      { "key": "showDisk", "type": "enum", "label": "Disk meter", "options": ["Auto", "Show", "Hide"], "defaultValue": "Auto", "description": "Auto/Show always show on any hardware; Hide removes the meter." }
+      { "key": "showDisk", "type": "enum", "label": "Disk meter", "options": ["Auto", "Show", "Hide"], "defaultValue": "Auto", "description": "Auto/Show always show on any hardware; Hide removes the meter." },
+      { "key": "displayMode", "type": "enum", "label": "Meter display", "options": ["Text", "Icons"], "defaultValue": "Text", "description": "Text shows 'cpu: 25% ...'; Icons shows Nerd glyphs. Click the widget in the bar to toggle." }
     ]
   }
 }
