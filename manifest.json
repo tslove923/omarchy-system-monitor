@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "trevor.system-monitor",
+  "name": "System Monitor",
+  "version": "0.1.0",
+  "author": "tslove923",
+  "license": "MIT",
+  "description": "CPU / GPU / NPU / RAM / swap / disk ring meters with a hover details card.",
+  "kinds": ["bar-widget"],
+  "entryPoints": { "barWidget": "BarWidget.qml" },
+  "barWidget": {
+    "displayName": "System Monitor",
+    "description": "CPU/GPU/NPU/RAM/swap/disk ring meters",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "left",
+    "defaults": {
+      "updateInterval": 3000,
+      "cpuThreshold": 90,
+      "gpuThreshold": 95,
+      "npuThreshold": 95,
+      "memoryThreshold": 95,
+      "swapThreshold": 85,
+      "diskThreshold": 90,
+      "showSwap": true,
+      "alwaysShowCpu": true
+    },
+    "schema": [
+      { "key": "updateInterval", "type": "number", "label": "Update interval (ms)" },
+      { "key": "cpuThreshold", "type": "number", "label": "CPU warning threshold (%)" },
+      { "key": "gpuThreshold", "type": "number", "label": "GPU warning threshold (%)" },
+      { "key": "npuThreshold", "type": "number", "label": "NPU warning threshold (%)" },
+      { "key": "memoryThreshold", "type": "number", "label": "RAM warning threshold (%)" },
+      { "key": "swapThreshold", "type": "number", "label": "Swap warning threshold (%)" },
+      { "key": "diskThreshold", "type": "number", "label": "Disk warning threshold (%)" },
+      { "key": "showSwap", "type": "bool", "label": "Show swap meter" },
+      { "key": "alwaysShowCpu", "type": "bool", "label": "Always show CPU meter" }
+    ]
+  }
+}

@@ -1,0 +1,254 @@
+import QtQuick
+import qs.Ui
+import qs.Commons
+import "Format.js" as Fmt
+
+// System Monitor — CPU / GPU / NPU / RAM / swap / disk ring meters with a
+// hover details card. Ported from the illogical-impulse QuickShell config,
+// rebuilt on the Omarchy widget kit (BarWidget + PopupCard).
+BarWidget {
+  id: root
+  moduleName: "trevor.system-monitor"
+
+  // ---- settings (inline shell.json entry; fallback = manifest defaults) ----
+  readonly property int updateIntervalMs: Math.max(500, root.setting("updateInterval", 3000))
+  readonly property int cpuThreshold: root.setting("cpuThreshold", 90)
+  readonly property int gpuThreshold: root.setting("gpuThreshold", 95)
+  readonly property int npuThreshold: root.setting("npuThreshold", 95)
+  readonly property int memoryThreshold: root.setting("memoryThreshold", 95)
+  readonly property int swapThreshold: root.setting("swapThreshold", 85)
+  readonly property int diskThreshold: root.setting("diskThreshold", 90)
+  readonly property bool showSwap: root.setting("showSwap", true)
+  readonly property bool alwaysShowCpu: root.setting("alwaysShowCpu", true)
+
+  // ---- Nerd Font glyphs ----
+  readonly property string cpuGlyph: ""   // fa-microchip
+  readonly property string gpuGlyph: ""   // fa-bolt
+  readonly property string npuGlyph: ""   // fa-brain
+  readonly property string memGlyph: ""   // fa-memory
+  readonly property string swapGlyph: ""  // fa-exchange
+  readonly property string diskGlyph: ""  // fa-hdd-o
+
+  // ---- theme ----
+  readonly property color normalColor: root.bar ? root.bar.barForeground : Color.foreground
+  readonly property color warnColor: root.bar ? root.bar.urgent : Color.urgent
+  readonly property string fam: root.bar ? root.bar.fontFamily : Style.font.family
+
+  function warn(p, threshold) {
+    return Math.round(p * 100) >= threshold
+  }
+
+  readonly property real memRatio: stats.memTotalKb > 0 ? stats.memUsedKb / stats.memTotalKb : 0
+  readonly property real swapRatio: stats.swapTotalKb > 0 ? stats.swapUsedKb / stats.swapTotalKb : 0
+
+  readonly property color cpuColor: root.warn(stats.cpuUsage, root.cpuThreshold) ? root.warnColor : root.normalColor
+  readonly property color gpuColor: root.warn(stats.gpuUsage, root.gpuThreshold) ? root.warnColor : root.normalColor
+  readonly property color npuColor: root.warn(stats.npuUsage, root.npuThreshold) ? root.warnColor : root.normalColor
+  readonly property color memColor: root.warn(root.memRatio, root.memoryThreshold) ? root.warnColor : root.normalColor
+  readonly property color swapColor: root.warn(root.swapRatio, root.swapThreshold) ? root.warnColor : root.normalColor
+  readonly property color diskColor: root.warn(stats.diskPct / 100, root.diskThreshold) ? root.warnColor : root.normalColor
+
+  // ---- data service (one instance per widget; meters + card share it) ----
+  property QtObject stats: StatsService {
+    id: svc
+    interval: root.updateIntervalMs
+    enabled: root.visible
+  }
+
+  onSettingsChanged: svc.interval = Math.max(500, root.setting("updateInterval", 3000))
+
+  // ---- hover open/close with a grace period so the cursor can cross the gap
+  // from the meters row into the card without it vanishing ----
+  readonly property bool rowHovered: rowHover.hovered
+  readonly property bool cardHovered: popup.containsMouse
+  property bool popupOpen: false
+
+  onRowHoveredChanged: {
+    if (root.rowHovered) {
+      closeTimer.stop()
+      root.popupOpen = true
+    } else {
+      closeTimer.restart()
+    }
+  }
+  onCardHoveredChanged: {
+    if (!root.cardHovered && !root.rowHovered) closeTimer.restart()
+  }
+
+  Timer {
+    id: closeTimer
+    interval: 200
+    onTriggered: if (!root.rowHovered && !root.cardHovered) root.popupOpen = false
+  }
+
+  implicitWidth: metersRow.implicitWidth
+  implicitHeight: root.barSize
+
+  // ---- meters row ----
+  Item {
+    id: metersRow
+    anchors.fill: parent
+    implicitWidth: metersLayout.implicitWidth
+    implicitHeight: root.barSize
+
+    Row {
+      id: metersLayout
+      anchors.centerIn: parent
+      spacing: Style.space(3)
+
+      MeterCell {
+        color: root.cpuColor
+        glyph: root.cpuGlyph
+        ratio: stats.cpuUsage
+        text: Fmt.pct01(stats.cpuUsage)
+        fontFamily: root.fam
+        barSize: root.barSize
+        visible: root.alwaysShowCpu || stats.cpuUsage > 0.01
+      }
+      MeterCell {
+        color: root.gpuColor
+        glyph: root.gpuGlyph
+        ratio: stats.gpuUsage
+        text: Fmt.pct01(stats.gpuUsage)
+        fontFamily: root.fam
+        barSize: root.barSize
+        visible: stats.gpuAvailable
+      }
+      MeterCell {
+        color: root.npuColor
+        glyph: root.npuGlyph
+        ratio: stats.npuUsage
+        text: Fmt.pct01(stats.npuUsage)
+        fontFamily: root.fam
+        barSize: root.barSize
+        visible: stats.npuAvailable
+      }
+      MeterCell {
+        color: root.memColor
+        glyph: root.memGlyph
+        ratio: root.memRatio
+        text: Fmt.pct01(root.memRatio)
+        fontFamily: root.fam
+        barSize: root.barSize
+      }
+      MeterCell {
+        color: root.swapColor
+        glyph: root.swapGlyph
+        ratio: root.swapRatio
+        text: Fmt.pct01(root.swapRatio)
+        fontFamily: root.fam
+        barSize: root.barSize
+        visible: root.showSwap && stats.swapTotalKb > 0
+      }
+      MeterCell {
+        color: root.diskColor
+        glyph: root.diskGlyph
+        ratio: stats.diskPct / 100
+        text: stats.diskPct + "%"
+        fontFamily: root.fam
+        barSize: root.barSize
+      }
+    }
+
+    HoverHandler { id: rowHover }
+  }
+
+  // ---- hover details card ----
+  PopupCard {
+    id: popup
+    anchorItem: root
+    bar: root.bar
+    owner: root
+    triggerMode: "hover"
+    open: root.popupOpen
+    contentWidth: popup.fittedContentWidth(
+      Style.space(84 + 52 + 64 + 76 * 3) + Style.spacing.popupPadding * 2 + Style.space(8))
+    contentHeight: popup.fittedContentHeight(details.implicitHeight)
+
+    Column {
+      id: details
+      width: parent.width
+      spacing: Style.spacing.xs
+
+      // header
+      Row {
+        width: parent.width
+        spacing: 0
+        Text { width: Style.space(84); text: "" }
+        Text { width: Style.space(52); text: "Load"; font.family: root.fam; font.pixelSize: Style.font.caption; color: Util.alpha(root.normalColor, 0.6); horizontalAlignment: Text.AlignRight }
+        Text { width: Style.space(64); text: "Freq"; font.family: root.fam; font.pixelSize: Style.font.caption; color: Util.alpha(root.normalColor, 0.6); horizontalAlignment: Text.AlignRight }
+        Text { width: Style.space(76); text: "Used"; font.family: root.fam; font.pixelSize: Style.font.caption; color: Util.alpha(root.normalColor, 0.6); horizontalAlignment: Text.AlignRight }
+        Text { width: Style.space(76); text: "Free"; font.family: root.fam; font.pixelSize: Style.font.caption; color: Util.alpha(root.normalColor, 0.6); horizontalAlignment: Text.AlignRight }
+        Text { width: Style.space(76); text: "Total"; font.family: root.fam; font.pixelSize: Style.font.caption; color: Util.alpha(root.normalColor, 0.6); horizontalAlignment: Text.AlignRight }
+      }
+
+      PanelSeparator { foreground: root.normalColor }
+
+      DetailRow {
+        label: root.cpuGlyph + " CPU"
+        color: root.cpuColor
+        fontFamily: root.fam
+        normalColor: root.normalColor
+        load: Fmt.pct01(stats.cpuUsage)
+        freq: stats.cpuFreqMhz > 0 ? Fmt.mhz(stats.cpuFreqMhz) : "Idle"
+      }
+      DetailRow {
+        visible: stats.gpuAvailable
+        label: root.gpuGlyph + " GPU"
+        color: root.gpuColor
+        fontFamily: root.fam
+        normalColor: root.normalColor
+        load: Fmt.pct01(stats.gpuUsage)
+        freq: stats.gpuFreqMhz > 0 ? Fmt.mhz(stats.gpuFreqMhz) : "Idle"
+      }
+      DetailRow {
+        visible: stats.npuAvailable
+        label: root.npuGlyph + " NPU"
+        color: root.npuColor
+        fontFamily: root.fam
+        normalColor: root.normalColor
+        load: Fmt.pct01(stats.npuUsage)
+        freq: stats.npuStatus === "suspended" ? "Suspended" : (stats.npuFreqMhz > 0 ? Fmt.mhz(stats.npuFreqMhz) : "Idle")
+        used: stats.npuMemBytes > 0 ? (stats.npuMemBytes / 1048576).toFixed(0) + " MB" : "—"
+      }
+      DetailRow {
+        label: root.memGlyph + " RAM"
+        color: root.memColor
+        fontFamily: root.fam
+        normalColor: root.normalColor
+        load: Fmt.pct01(root.memRatio)
+        used: Fmt.gb(stats.memUsedKb)
+        free: Fmt.gb(stats.memTotalKb - stats.memUsedKb)
+        total: Fmt.gb(stats.memTotalKb)
+      }
+      DetailRow {
+        visible: root.showSwap && stats.swapTotalKb > 0
+        label: root.swapGlyph + " Swap"
+        color: root.swapColor
+        fontFamily: root.fam
+        normalColor: root.normalColor
+        load: Fmt.pct01(root.swapRatio)
+        used: Fmt.gb(stats.swapUsedKb)
+        free: Fmt.gb(stats.swapTotalKb - stats.swapUsedKb)
+        total: Fmt.gb(stats.swapTotalKb)
+      }
+      DetailRow {
+        label: root.diskGlyph + " Disk"
+        color: root.diskColor
+        fontFamily: root.fam
+        normalColor: root.normalColor
+        load: stats.diskPct + "%"
+        used: Fmt.gb(stats.diskUsedKb)
+        free: Fmt.gb(stats.diskAvailKb)
+        total: Fmt.gb(stats.diskTotalKb)
+      }
+
+      Text {
+        text: "disk: btrfs allocation via df (used + free ≠ total)"
+        font.family: root.fam
+        font.pixelSize: Style.font.caption
+        color: Util.alpha(root.normalColor, 0.5)
+      }
+    }
+  }
+}
