@@ -19,11 +19,13 @@ BarWidget {
   readonly property int swapThreshold: root.setting("swapThreshold", 85)
   readonly property int diskThreshold: root.setting("diskThreshold", 90)
 
-  // ---- Nerd Font glyphs ----
+  // ---- Nerd Font glyphs (verified present in the bar font JetBrainsMono NF).
+  // fa-brain (U+F5DC) and fa-memory (U+F538) are NOT in it, so NPU and RAM use
+  // the mdi equivalents (chip / memory) which are covered.
   readonly property string cpuGlyph: ""   // fa-microchip
   readonly property string gpuGlyph: ""   // fa-bolt
-  readonly property string npuGlyph: ""   // fa-brain
-  readonly property string memGlyph: ""   // fa-memory
+  readonly property string npuGlyph: ""    // mdi-chip
+  readonly property string memGlyph: ""    // mdi-memory
   readonly property string swapGlyph: ""  // fa-exchange
   readonly property string diskGlyph: ""  // fa-hdd-o
 
@@ -129,37 +131,37 @@ BarWidget {
       Item { width: Style.spaceReal(8); height: 1 }
 
       MeterText {
-        text: root.mode === "icons" ? root.cpuGlyph : "cpu: " + Fmt.pct01(stats.cpuUsage)
+        text: root.mode === "icons" ? root.cpuGlyph + " " + Fmt.pct01(stats.cpuUsage) : "cpu: " + Fmt.pct01(stats.cpuUsage)
         warn: root.warn(stats.cpuUsage, root.cpuThreshold)
         meterFontSize: root.meterFontSize
         visible: root.meterVisible(true, "showCpu")
       }
       MeterText {
-        text: root.mode === "icons" ? root.gpuGlyph : "gpu: " + Fmt.pct01(stats.gpuUsage)
+        text: root.mode === "icons" ? root.gpuGlyph + " " + Fmt.pct01(stats.gpuUsage) : "gpu: " + Fmt.pct01(stats.gpuUsage)
         warn: root.warn(stats.gpuUsage, root.gpuThreshold)
         meterFontSize: root.meterFontSize
         visible: root.meterVisible(stats.gpuAvailable, "showGpu")
       }
       MeterText {
-        text: root.mode === "icons" ? root.npuGlyph : "npu: " + Fmt.pct01(stats.npuUsage)
+        text: root.mode === "icons" ? root.npuGlyph + " " + Fmt.pct01(stats.npuUsage) : "npu: " + Fmt.pct01(stats.npuUsage)
         warn: root.warn(stats.npuUsage, root.npuThreshold)
         meterFontSize: root.meterFontSize
         visible: root.meterVisible(stats.npuAvailable, "showNpu")
       }
       MeterText {
-        text: root.mode === "icons" ? root.memGlyph : "ram: " + Fmt.pct01(root.memRatio)
+        text: root.mode === "icons" ? root.memGlyph + " " + Fmt.pct01(root.memRatio) : "ram: " + Fmt.pct01(root.memRatio)
         warn: root.warn(root.memRatio, root.memoryThreshold)
         meterFontSize: root.meterFontSize
         visible: root.meterVisible(true, "showRam")
       }
       MeterText {
-        text: root.mode === "icons" ? root.swapGlyph : "swap: " + Fmt.pct01(root.swapRatio)
+        text: root.mode === "icons" ? root.swapGlyph + " " + Fmt.pct01(root.swapRatio) : "swap: " + Fmt.pct01(root.swapRatio)
         warn: root.warn(root.swapRatio, root.swapThreshold)
         meterFontSize: root.meterFontSize
         visible: root.meterVisible(stats.swapTotalKb > 0, "showSwap")
       }
       MeterText {
-        text: root.mode === "icons" ? root.diskGlyph : "disk: " + stats.diskPct + "%"
+        text: root.mode === "icons" ? root.diskGlyph + " " + stats.diskPct + "%" : "disk: " + stats.diskPct + "%"
         warn: root.warn(stats.diskPct / 100, root.diskThreshold)
         meterFontSize: root.meterFontSize
         visible: root.meterVisible(true, "showDisk")
