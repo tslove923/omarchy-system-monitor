@@ -13,7 +13,7 @@ warning color (`bar.urgent`) above its configured threshold.
 ## Install
 
 ```sh
-omarchy plugin add https://github.com/tlove923/omarchy-system-monitor --enable
+omarchy plugin add https://github.com/tslove923/omarchy-system-monitor --enable
 omarchy-shell shell rescanPlugins
 omarchy bar move trevor.system-monitor --section left
 ```
