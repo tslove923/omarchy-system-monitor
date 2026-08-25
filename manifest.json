@@ -3,7 +3,7 @@
   "id": "trevor.system-monitor",
   "name": "System Monitor",
   "version": "0.2.0",
-  "author": "tlove923",
+  "author": "tslove923",
   "license": "MIT",
   "description": "CPU / GPU / NPU / RAM / swap / disk meters (text or icons) with a hover details card.",
   "kinds": ["bar-widget"],
