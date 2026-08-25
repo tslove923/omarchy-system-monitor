@@ -57,7 +57,9 @@ BarWidget {
   // a live binding (like the clock's format) so it follows config changes and
   // re-evaluates when persistSettings replaces the settings object.
   readonly property string mode: root.setting("displayMode", "Text").toLowerCase() === "icons" ? "icons" : "text"
-  readonly property real meterFontSize: root.mode === "icons" ? Style.font.icon : Style.font.caption
+  // Fixed at the bar body size so meters always match the workspace indicator
+  // buttons (WidgetButton's default fontSize), in both text and icon mode.
+  readonly property real meterFontSize: Style.font.body
 
   function persistSettings(values) {
     var entry = { id: root.moduleName }

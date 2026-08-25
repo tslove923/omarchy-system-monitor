@@ -18,7 +18,7 @@ Item {
   property string pct: ""              // icon-mode percentage, e.g. "25%"
   property string glyphFont: ""        // explicit font for the glyph ("" -> fontFamily)
   property string fontFamily: Style.font.family
-  property real meterFontSize: Style.font.caption
+  property real meterFontSize: Style.font.body
   property bool warn: false
   property color normalColor: Color.foreground
   property color warnColor: Color.urgent
